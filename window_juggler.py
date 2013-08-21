@@ -1,57 +1,46 @@
 #!/usr/bin/env python
-import sys
-import gtk
+from gi.repository import Gtk, Wnck
 import subprocess
-import time
+import sys
+import glib
 
-#function to get list of windows from wmctrl
-def get_windows():
-    wmctrl_process = subprocess.Popen('wmctrl -l', stdout=subprocess.PIPE, shell=True)
-    wmctrl_output = wmctrl_process.communicate()
-    return wmctrl_output[0].split("\n")
+#handler for new windows created during script execution
+def on_new_window(screen, window):
+	screen.change_workspace_count(screen.get_workspace_count()+1)
+	workspaces = screen.get_workspaces()
+	window.move_to_workspace(workspaces[screen.get_workspace_count()-1])
+	window.maximize()
 
-#function to get id of most recently launched window
-def move_to_workspace(workspace):
-    list_of_windows = get_windows()
+#function for timeout
+def execute(command):
+	process = subprocess.Popen(command.split())
+	return False
 
-    number_of_windows = len(list_of_windows)
-    if number_of_windows > 0:
-        most_recent_window = list_of_windows[number_of_windows-2].split()
-        if most_recent_window[1] >=0:
-            move_process = subprocess.Popen(['wmctrl', '-i', '-r', str(most_recent_window[0]), '-t', str(workspace)])
+#called after all windows -should- have launched and been arranged
+def quit(screen):
+	screen.change_workspace_count(screen.get_workspace_count()-1)
+	screen.force_update()
+	Gtk.main_quit()
+	return False
 
-#function to move all windows to specific workspace
-def move_all_to_workspace(workspace):
-    while gtk.events_pending():
-        gtk.main_iteration()
+#main
+def main():
+	while Gtk.events_pending():
+		Gtk.main_iteration()
 
-    list_of_windows = get_windows()
-    number_of_windows = len(list_of_windows)
+	screen = Wnck.Screen.get_default()
+	screen.force_update()
+	screen.connect("window-opened", on_new_window)
+	screen.change_workspace_count(2)
 
-    for w in range(0, number_of_windows-1):
-        current_window = list_of_windows[w].split()
+	config_file = open(sys.argv[1], 'r')
 
-        if int(current_window[1]) >= 0:
-            move_process = subprocess.Popen(['wmctrl', '-i', '-r', current_window[0], '-t', workspace])
+	for line in config_file:
+		glib.timeout_add(5000, execute, line)
 
-#function to execute line from file
-def execute_command(command):
-    subprocess.Popen(command.split())
-    time.sleep(1)
+	glib.timeout_add(8000, quit, screen)
 
-#MAIN
-if len(sys.argv) < 2:
-    sys.exit("No file named specified")
+	Gtk.main()
 
-config_file = open(sys.argv[1], 'r')
-workspace = -1
-
-for line in config_file:
-    if workspace >= 0:
-        print line
-        execute_command(line)
-        move_to_workspace(workspace)
-    else:
-        wmctrl_process = subprocess.Popen(['wmctrl', '-n', line])
-        move_all_to_workspace(line)
-    workspace += 1
+if __name__ == "__main__":
+	main()
