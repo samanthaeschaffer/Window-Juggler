@@ -15,5 +15,5 @@
 ####AUTHOR
     Samantha Schaffer http://github.com/samanthaeschaffer
     
-#####Version 0.9.3
+#####Version 1.0.1
 #####August 22nd 2013
