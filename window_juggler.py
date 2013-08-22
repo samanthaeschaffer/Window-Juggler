@@ -12,17 +12,11 @@ def on_new_window(screen, window):
 	        screen.change_workspace_count(screen.get_workspace_count()+1)
 		screen.force_update()
 		window.maximize()
+		Gtk.main_quit()
 
 #function to execute command
 def execute(command):
 	process = subprocess.Popen(command.split())
-	return False
-
-#function called after all windows -should- have launched and been arranged
-def quit(screen):
-	Wnck.shutdown()
-	screen.force_update()
-	Gtk.main_quit()
 	return False
 
 #main
@@ -37,15 +31,13 @@ def main():
 	screen.force_update()
 
 	config_file = open(sys.argv[1], 'r')
-	waittime = 10000
 
 	for line in config_file:
-		glib.timeout_add(waittime, execute, line)
-		waittime += 2000
-	waittime *= 2
-	glib.timeout_add(waittime, quit, screen)
+		glib.timeout_add(1000, execute, line)
+		Gtk.main()
 
-	Gtk.main()
+	Wnck.shutdown()
+	screen.force_update()
 
 if __name__ == "__main__":
 	main()
