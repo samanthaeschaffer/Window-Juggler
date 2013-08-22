@@ -41,8 +41,9 @@ def main():
 
 	for line in config_file:
 		glib.timeout_add(waittime, execute, line)
-		waittime += 1000
-	glib.timeout_add(20000, quit, screen)
+		waittime += 2000
+	waittime *= 2
+	glib.timeout_add(waittime, quit, screen)
 
 	Gtk.main()
 
