@@ -1,6 +1,7 @@
 # Run using command:
-# python Window-Juggler.py sample_config.txt
+# python window-juggler.py sample_config.txt
 
+## IMPORTANT ##
 # Remove all comment lines when actually executing
 # Script does not parse out comments
 
