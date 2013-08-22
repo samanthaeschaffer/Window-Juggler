@@ -1,0 +1,9 @@
+# Run using command:
+# python Window-Juggler.py sample_config.txt
+
+# Remove all comment lines when actually executing
+# Script does not parse out comments
+
+chromium-browser https://github.com/mate-desktop/ --new-window
+chromium-browser https://developer.gnome.org/libwnck/stable/overview.html --new-window
+mate-terminal
