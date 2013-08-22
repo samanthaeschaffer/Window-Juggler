@@ -6,19 +6,21 @@ import glib
 
 #handler for new windows created during script execution
 def on_new_window(screen, window):
-	screen.change_workspace_count(screen.get_workspace_count()+1)
-	workspaces = screen.get_workspaces()
-	window.move_to_workspace(workspaces[screen.get_workspace_count()-1])
-	window.maximize()
+	if not window.is_pinned():
+		workspaces = screen.get_workspaces()
+		window.move_to_workspace(workspaces[screen.get_workspace_count()-1])
+	        screen.change_workspace_count(screen.get_workspace_count()+1)
+		screen.force_update()
+		window.maximize()
 
-#function for timeout
+#function to execute command
 def execute(command):
 	process = subprocess.Popen(command.split())
 	return False
 
-#called after all windows -should- have launched and been arranged
+#function called after all windows -should- have launched and been arranged
 def quit(screen):
-	screen.change_workspace_count(screen.get_workspace_count()-1)
+	Wnck.shutdown()
 	screen.force_update()
 	Gtk.main_quit()
 	return False
@@ -31,14 +33,16 @@ def main():
 	screen = Wnck.Screen.get_default()
 	screen.force_update()
 	screen.connect("window-opened", on_new_window)
-	screen.change_workspace_count(2)
+	screen.change_workspace_count(1)
+	screen.force_update()
 
 	config_file = open(sys.argv[1], 'r')
+	waittime = 10000
 
 	for line in config_file:
-		glib.timeout_add(5000, execute, line)
-
-	glib.timeout_add(8000, quit, screen)
+		glib.timeout_add(waittime, execute, line)
+		waittime += 1000
+	glib.timeout_add(20000, quit, screen)
 
 	Gtk.main()
 
